@@ -7,6 +7,7 @@
 #include <vector>
 #include <chrono>
 
+using namespace std::chrono;
 using namespace std;
 
 typedef std::vector<std::vector<float>> matriz;
@@ -15,6 +16,7 @@ typedef std::vector<float> vetor;
 int m = 2048, n = 2048;
 matriz A(m, vetor(n, 0));
 matriz B(m, vetor(n, 0));
+matriz C(m, vetor(n, 0));
 
 int lerA(string a){
 
@@ -53,16 +55,28 @@ int lerB(string b){
 }
 
 void product() {
-	matriz C(m, vetor(n, 0));
 	for(int i = 0; i < m; i++){
 		for(int j = 0; j < n; j++){
 			for(int k = 0; k < n; k++){
 				C[i][j] += A[i][k] * B[k][j];
 			}
-			cout << C[i][j] << " ";
 		}
-		cout <<"\n";
 	}
+}
+
+void writeResultMatrix(){
+	ofstream output;
+	string fileName = "Results/C" + to_string(m) + "x" + to_string(m) + ".txt";
+	output.open (fileName);
+
+	for(int i = 0; i < m; i++){
+		for(int j = 0; j < n; j++){
+			output << C[i][j] << " ";
+		}
+		output << "\n";
+	}
+
+	output.close();
 }
 
 void lerArgs(int argc, const char * argv[]){
@@ -77,22 +91,27 @@ void lerArgs(int argc, const char * argv[]){
 }
 
 void showTime(double tempoTotal){
-	cout << "----------------------------"  << endl;
-	cout << "Tempo Total: " << (tempoTotal*1000) << " ms"<< endl;
+	//cout << "----------------------------"  << endl;
+	ofstream output;
+	output.open ("Times.txt", fstream::app);
+	string content = "C" + to_string(m) + "x" + to_string(m) + ": " + to_string(tempoTotal*1000) + "\n";
+	output << content;
 }
 
 int main(int argc, const char * argv[]){
 	
-	auto t1 = std::chrono::high_resolution_clock::now();
+	steady_clock::time_point t1 = steady_clock::now();
 
 	lerArgs(argc, argv);	//		./fatoracaoLU.cpp.o matrizA.txt vetorB.txt 3 3
 	
 	product();
 	
-	auto t2 = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> tempo = t2 - t1;
-	double tempoTotal = tempo.count();
+	steady_clock::time_point t2 = steady_clock::now();
+	duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+	double tempoTotal = time_span.count();
 	
+	writeResultMatrix();
+
 	showTime(tempoTotal);
 	
 	return 0;
